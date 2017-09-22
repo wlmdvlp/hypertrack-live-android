@@ -97,3 +97,4 @@ crashlytics-build.properties
 /app/src/main/res/values/api-keys.xml
 /key.properties
 /fastlane/
+fastlane.zip

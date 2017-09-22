@@ -147,7 +147,6 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
                         HyperTrack.clearServiceNotificationParams();
                         break;
                     case HyperTrackEvent.EventType.ACTIVITY_CHANGED_EVENT:
-
                         showActivityChangedNotification(Placeline.this, getActivityChangedMessage((UserActivity) event.getData()));
                         break;
                 }

@@ -13,10 +13,8 @@ import org.robolectric.annotation.Config;
 import io.hypertrack.sendeta.BuildConfig;
 import io.hypertrack.sendeta.R;
 
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 21, constants = BuildConfig.class)
@@ -61,11 +59,5 @@ public class TrackTest {
         assertEquals(16, rightMargin);
         int leftMargin = ((FrameLayout.LayoutParams) textView.getLayoutParams()).leftMargin;
         assertEquals(16, leftMargin);
-    }
-
-    @Test
-    public void shouldHaveCorrectAppName() throws Exception {
-        String hello = activity.getResources().getString(R.string.app_name);
-        assertThat(hello, equalTo("HyperTrack Live"));
     }
 }
