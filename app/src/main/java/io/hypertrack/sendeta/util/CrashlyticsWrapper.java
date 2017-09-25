@@ -43,7 +43,7 @@ import io.hypertrack.sendeta.store.OnboardingManager;
 
 public class CrashlyticsWrapper {
 
-    static Context context;
+    private static Context context;
 
     public static void log(Exception e) {
         String apiKey = null;
@@ -101,5 +101,9 @@ public class CrashlyticsWrapper {
         }
 
         return apiKey;
+    }
+
+    public static void reset(){
+        context = null;
     }
 }

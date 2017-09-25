@@ -263,6 +263,7 @@ public class Verify extends BaseActivity implements VerifyView {
     protected void onDestroy() {
         // Detach View from Presenter
         presenter.detachView();
+        CrashlyticsWrapper.reset();
         super.onDestroy();
     }
 

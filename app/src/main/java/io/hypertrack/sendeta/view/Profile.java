@@ -585,6 +585,7 @@ public class Profile extends BaseActivity implements ProfileView {
     protected void onDestroy() {
         // Detach View Presenter from View
         presenter.detachView();
+        CrashlyticsWrapper.reset();
         super.onDestroy();
     }
 }
