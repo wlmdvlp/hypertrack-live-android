@@ -30,7 +30,9 @@ import android.content.Context;
 import com.crashlytics.android.Crashlytics;
 import com.hypertrack.lib.internal.common.util.HTTextUtils;
 
+import io.fabric.sdk.android.Fabric;
 import io.fabric.sdk.android.services.common.ApiKey;
+import io.fabric.sdk.android.services.common.CommonUtils;
 import io.hypertrack.sendeta.model.HyperTrackLiveUser;
 import io.hypertrack.sendeta.store.OnboardingManager;
 
@@ -85,5 +87,20 @@ public class CrashlyticsWrapper {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    protected static String getApiKeyFromStrings(Context context) {
+        String apiKey = null;
+        int id = CommonUtils.getResourcesIdentifier(context, "io.fabric.ApiKey", "string");
+        if (id == 0) {
+            Fabric.getLogger().d("Fabric", "Falling back to Crashlytics key lookup from Strings");
+            id = CommonUtils.getResourcesIdentifier(context, "com.crashlytics.ApiKey", "string");
+        }
+
+        if (id != 0) {
+            apiKey = context.getResources().getString(id);
+        }
+
+        return apiKey;
     }
 }

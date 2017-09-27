@@ -100,10 +100,12 @@ import com.hypertrack.lib.models.ServiceNotificationParams;
 import com.hypertrack.lib.models.ServiceNotificationParamsBuilder;
 import com.hypertrack.lib.models.SuccessResponse;
 import com.hypertrack.lib.models.User;
+import com.squareup.leakcanary.RefWatcher;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.hypertrack.sendeta.MyApplication;
 import io.hypertrack.sendeta.R;
 import io.hypertrack.sendeta.callback.ActionManagerListener;
 import io.hypertrack.sendeta.presenter.HomePresenter;
@@ -164,7 +166,8 @@ public class Home extends BaseActivity implements HomeView {
         }
     };
 
-    public MapFragmentCallback callback = new MapFragmentCallback() {
+
+    public class MyMapFragmentCallback extends MapFragmentCallback {
         @Override
         public void onMapReadyCallback(HyperTrackMapFragment hyperTrackMapFragment, GoogleMap map) {
             onMapReady(map);
@@ -277,6 +280,8 @@ public class Home extends BaseActivity implements HomeView {
         }
     };
 
+    public final MapFragmentCallback callback = new MyMapFragmentCallback();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -353,6 +358,10 @@ public class Home extends BaseActivity implements HomeView {
                 // do nothing
             }
         });
+    }
+
+    private void removeHyperTrackEventCallback(){
+        HyperTrack.setCallback(null);
     }
 
     private void initializeUIViews() {
@@ -1406,6 +1415,10 @@ public class Home extends BaseActivity implements HomeView {
             OnStopSharing();
             HyperTrack.removeActions(null);
         }
+        removeHyperTrackEventCallback();
+        ActionManager.resetSharedManager();
         super.onDestroy();
+        RefWatcher refWatcher = MyApplication.getRefWatcher(this);
+        refWatcher.watch(this);
     }
 }

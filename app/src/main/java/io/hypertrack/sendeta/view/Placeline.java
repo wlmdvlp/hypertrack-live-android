@@ -26,11 +26,9 @@ import io.hypertrack.sendeta.store.SharedPreferenceManager;
 
 public class Placeline extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final String TAG = Placeline.class.getSimpleName();
-    PlacelineFragment placelineFragment;
-    FloatingActionButton floatingActionButton;
+    private PlacelineFragment placelineFragment;
     private DrawerLayout drawer;
-    NavigationView navigationView;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,7 +52,7 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
         }
         navigationView.setNavigationItemSelectedListener(this);
         placelineFragment = (PlacelineFragment) getSupportFragmentManager().findFragmentById(R.id.placeline_fragment);
-        floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingActionButton);
+        FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -103,6 +103,10 @@ public class ActionManager implements GoogleApiClient.ConnectionCallbacks {
         return false;
     }
 
+    public static void resetSharedManager(){
+        sharedManager = null;
+    }
+
     public void completeAction(final ActionManagerCallback callback) {
 
         if (HTTextUtils.isEmpty(this.getHyperTrackActionId())) {

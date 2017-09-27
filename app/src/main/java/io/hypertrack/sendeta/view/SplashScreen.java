@@ -82,6 +82,7 @@ public class SplashScreen extends BaseActivity {
     private ProgressBar progressBar;
     private boolean autoAccept;
     private String userID, accountID;
+    private ActionManager actionManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -214,7 +215,7 @@ public class SplashScreen extends BaseActivity {
 
             case DeepLinkUtil.DEFAULT:
             default:
-                final ActionManager actionManager = ActionManager.getSharedManager(this);
+                actionManager = ActionManager.getSharedManager(this);
                 //Check if there is any existing task to be restored
                 if (actionManager.shouldRestoreState()) {
                     TaskStackBuilder.create(this)
@@ -287,8 +288,9 @@ public class SplashScreen extends BaseActivity {
 
     private void handleTrackingDeepLinkSuccess(String lookupId, String actionId) {
         // Check if current lookupId is same as the one active currently
+        actionManager  = ActionManager.getSharedManager(this);
         if (!HTTextUtils.isEmpty(lookupId) &&
-                lookupId.equals(ActionManager.getSharedManager(this).getHyperTrackActionLookupId())) {
+                lookupId.equals(actionManager.getHyperTrackActionLookupId())) {
             TaskStackBuilder.create(this)
                     .addNextIntentWithParentStack(new Intent(this, Home.class)
                             .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
@@ -324,7 +326,7 @@ public class SplashScreen extends BaseActivity {
     }
 
     private void handleTrackingDeepLinkError() {
-        ActionManager actionManager = ActionManager.getSharedManager(this);
+        actionManager = ActionManager.getSharedManager(this);
         //Check if there is any existing task to be restored
         if (actionManager.shouldRestoreState()) {
             TaskStackBuilder.create(this)
@@ -436,5 +438,24 @@ public class SplashScreen extends BaseActivity {
                 }
             }).show();
         }
+    }
+
+    public void energyBreakPointStart(final int stateId, final String stateDescription) {
+        final Intent stateUpdate = new Intent("com.quicinc.Trepn.UpdateAppState");
+        stateUpdate.putExtra("com.quicinc.Trepn.UpdateAppState.Value", stateId);
+        stateUpdate.putExtra("com.quicinc.Trepn.UpdateAppState.Value.Desc", stateDescription);
+        sendBroadcast(stateUpdate);
+    }// Generated  energyBreakPointStart method
+
+    public void energyBreakPointEnd() {
+        final Intent stateUpdate = new Intent("com.quicinc.Trepn.UpdateAppState");
+        stateUpdate.putExtra("com.quicinc.Trepn.UpdateAppState.Value", 0);
+        sendBroadcast(stateUpdate);
+    }// Generated  energyBreakPointEnd method
+
+    @Override
+    protected void onDestroy() {
+        ActionManager.resetSharedManager();
+        super.onDestroy();
     }
 }
