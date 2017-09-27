@@ -38,8 +38,8 @@ import com.hypertrack.lib.internal.common.util.HTTextUtils;
 import java.util.List;
 
 import io.hypertrack.sendeta.R;
-import io.hypertrack.sendeta.presenter.ITrackPresenter;
 import io.hypertrack.sendeta.presenter.TrackPresenter;
+import io.hypertrack.sendeta.presenter.ITrackPresenter;
 
 public class Track extends BaseActivity implements TrackView {
 
@@ -49,14 +49,14 @@ public class Track extends BaseActivity implements TrackView {
 
     private Intent intent;
     private Button retryButton;
-    private TrackPresenter trackPresenter;
+    private ITrackPresenter ITrackPresenter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_track);
 
-        trackPresenter = new ITrackPresenter(this);
+        ITrackPresenter = new TrackPresenter(this);
 
         initializeUI();
 
@@ -84,7 +84,7 @@ public class Track extends BaseActivity implements TrackView {
             if (!HTTextUtils.isEmpty(lookupId)) {
                 if (intent.getBooleanExtra(KEY_TRACK_DEEPLINK, false)) {
                     // Add lookupId being tracked by this user
-                    trackPresenter.trackAction(lookupId);
+                    ITrackPresenter.trackAction(lookupId);
                 }
                 return true;
 
@@ -95,7 +95,7 @@ public class Track extends BaseActivity implements TrackView {
                 if (actionIdList != null && !actionIdList.isEmpty()) {
                     if (intent.getBooleanExtra(KEY_TRACK_DEEPLINK, false)) {
                         // Add TaskId being tracked by this user
-                        trackPresenter.trackAction(actionIdList);
+                        ITrackPresenter.trackAction(actionIdList);
                     }
                     return true;
                 }
@@ -140,13 +140,13 @@ public class Track extends BaseActivity implements TrackView {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        trackPresenter.removeTrackingAction();
+        ITrackPresenter.removeTrackingAction();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        trackPresenter.destroy();
+        ITrackPresenter.destroy();
     }
 
     /**

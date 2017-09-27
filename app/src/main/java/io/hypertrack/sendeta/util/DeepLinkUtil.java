@@ -39,9 +39,9 @@ import io.hypertrack.sendeta.model.AppDeepLink;
 public class DeepLinkUtil {
 
     //DeepLink Ids
-    private static final int HOME = 1;
+    public static final int HOME = 1;
     public static final int TRACK = 2;
-    public static final int BRANCH = 3;
+    private static final int BRANCH = 3;
     public static final int DEFAULT = HOME;
 
     //deeplink mapping keys
@@ -51,8 +51,6 @@ public class DeepLinkUtil {
     private static final String KEY_LOOKUP_ID = "lookup_id";
     private static final String KEY_ORDER_ID = "order_id";
 
-
-    //private static AppDeepLink appDeepLink;
     public static AppDeepLink prepareAppDeepLink(Context context, Uri uri) {
 
         AppDeepLink appDeepLink = new AppDeepLink(DEFAULT);

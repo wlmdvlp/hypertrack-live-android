@@ -42,12 +42,9 @@ import io.hypertrack.sendeta.util.DevDebugUtils;
  */
 public class MyApplication extends Application {
 
-    private static MyApplication mInstance;
-
     @Override
     public void onCreate() {
         super.onCreate();
-        mInstance = this;
 
         if (LeakCanary.isInAnalyzerProcess(this)) {
             // This process is dedicated to LeakCanary for heap analysis.
@@ -68,7 +65,7 @@ public class MyApplication extends Application {
         // Initialize HyperTrack SDK
         HyperTrack.initialize(this.getApplicationContext(), BuildConfig.HYPERTRACK_PK);
         HyperTrack.enableMockLocations(true);
-        HyperTrack.disablePersistentNotification(true);
+        HyperTrack.disablePersistentNotification(false);
 
         // Initialize Branch.io
         Branch.getAutoInstance(this);
@@ -80,9 +77,5 @@ public class MyApplication extends Application {
         DevDebugUtils.setHTLogLevel(Log.VERBOSE);
         // Log HyperTrack SDK Version
         DevDebugUtils.sdkVersionMessage();
-    }
-
-    public static synchronized MyApplication getInstance() {
-        return mInstance;
     }
 }

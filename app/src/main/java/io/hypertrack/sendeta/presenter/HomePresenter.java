@@ -45,7 +45,6 @@ import java.util.UUID;
 
 import io.hypertrack.sendeta.callback.ActionManagerCallback;
 import io.hypertrack.sendeta.store.ActionManager;
-import io.hypertrack.sendeta.store.OnboardingManager;
 import io.hypertrack.sendeta.store.SharedPreferenceManager;
 import io.hypertrack.sendeta.view.HomeView;
 
@@ -69,9 +68,9 @@ public class HomePresenter implements IHomePresenter<HomeView> {
     }
 
     @Override
-    public void shareLiveLocation(final ActionManager actionManager, final String lookupID, final Place expectedPlace) {
-        User user = OnboardingManager.sharedManager().getUser();
-        if (user == null) {
+    public void shareLiveLocation(final User user, final ActionManager actionManager, final String lookupID, final Place expectedPlace) {
+
+        if (user == null || expectedPlace == null) {
             if (view != null)
                 view.showShareLiveLocationError(new ErrorResponse());
             return;
@@ -81,8 +80,7 @@ public class HomePresenter implements IHomePresenter<HomeView> {
                 .setLookupId(lookupID != null ? lookupID : UUID.randomUUID().toString())
                 .setType(Action.ACTION_TYPE_VISIT);
 
-        if (expectedPlace == null) {
-        } else if (!HTTextUtils.isEmpty(expectedPlace.getId())) {
+        if (!HTTextUtils.isEmpty(expectedPlace.getId())) {
             builder.setExpectedPlaceId(expectedPlace.getId());
         } else {
             builder.setExpectedPlace(expectedPlace);
@@ -104,24 +102,23 @@ public class HomePresenter implements IHomePresenter<HomeView> {
                         view.showShareLiveLocationSuccess(action);
 
                 } else {
+                    Log.e(TAG, "onSuccess: Response Object is null", null);
                     if (view != null)
                         view.showShareLiveLocationError(new ErrorResponse());
-                    Log.e(TAG, "onSuccess: Response Object is null", null);
                 }
             }
 
             @Override
             public void onError(@NonNull ErrorResponse errorResponse) {
+                HTLog.e(TAG, "Share Live Location failed with error: " + errorResponse.getErrorMessage());
                 if (view != null)
                     view.showShareLiveLocationError(errorResponse);
-                HTLog.e(TAG, "Share Live Location failed with error: " + errorResponse.getErrorMessage());
             }
         });
     }
 
     @Override
     public void stopSharing(final ActionManager actionManager, final boolean fromGeofence) {
-
         actionManager.completeAction(new ActionManagerCallback() {
             @Override
             public void OnSuccess() {
@@ -156,16 +153,19 @@ public class HomePresenter implements IHomePresenter<HomeView> {
                 !HTTextUtils.isEmpty(action.getActionDisplay().getDurationRemaining())) {
             Integer eta = Integer.parseInt(action.getActionDisplay().getDurationRemaining());
             String remainingTime = ActionUtils.getFormattedTimeString(context, Double.valueOf(eta));
-            if (HTTextUtils.isEmpty(remainingTime)) {
-                if (view != null)
-                    view.showCustomShareCardError(action.getTrackingURL());
-            } else {
-                if (view != null)
-                    view.showCustomShareCardSuccess(remainingTime,
-                            action.getTrackingURL());
-            }
 
-        } else if (view != null)
+            if (view != null) {
+                if (HTTextUtils.isEmpty(remainingTime)) {
+                    view.showCustomShareCardError(action.getTrackingURL());
+                } else {
+                    view.showCustomShareCardSuccess(remainingTime,
+                                action.getTrackingURL());
+                }
+            }
+            return;
+        }
+
+        if (view != null)
             view.showCustomShareCardError(action.getTrackingURL());
     }
 
@@ -231,13 +231,13 @@ public class HomePresenter implements IHomePresenter<HomeView> {
                                     return;
                                 }
                                 view.showShareBackCard(remainingTime);
-                                SharedPreferenceManager.setTrackingAction(action);
+                                SharedPreferenceManager.setTrackingAction(context, action);
                                 return;
                             } else if (actions.size() > 1 && actions.contains(actionManager.getHyperTrackActionId())) {
                                 if (actions.get(0).getId().equalsIgnoreCase(actionIDs.get(0)))
-                                    SharedPreferenceManager.setTrackingAction(action);
+                                    SharedPreferenceManager.setTrackingAction(context, action);
                                 else {
-                                    SharedPreferenceManager.setTrackingAction(actions.get(1));
+                                    SharedPreferenceManager.setTrackingAction(context, actions.get(1));
                                 }
                             } else if (actions.size() > 1) {
                                 view.hideBottomCard();
@@ -277,14 +277,14 @@ public class HomePresenter implements IHomePresenter<HomeView> {
                             }
                             if (view != null) {
                                 if (actions.size() == 1 && !actions.contains(actionManager.getHyperTrackActionId())) {
-                                    SharedPreferenceManager.setTrackingAction(action);
+                                    SharedPreferenceManager.setTrackingAction(context, action);
                                     view.showShareBackCard(remainingTime);
                                     return;
                                 } else if (actions.size() > 1 && actions.contains(actionManager.getHyperTrackActionId())) {
                                     if (actions.get(0).getId().equalsIgnoreCase(actionIDs.get(0)))
-                                        SharedPreferenceManager.setTrackingAction(action);
+                                        SharedPreferenceManager.setTrackingAction(context, action);
                                     else {
-                                        SharedPreferenceManager.setTrackingAction(actions.get(1));
+                                        SharedPreferenceManager.setTrackingAction(context, actions.get(1));
                                     }
                                 }
                                 view.showTrackActionsOnMapSuccess(actions);

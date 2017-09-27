@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
@@ -39,7 +40,8 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
         initUI();
 
         // Start Tracking, Only first time
-        if (SharedPreferenceManager.isTrackingON() == null || (SharedPreferenceManager.isTrackingON() && !HyperTrack.isTracking())) {
+        if (SharedPreferenceManager.isTrackingON(this) == null ||
+                (SharedPreferenceManager.isTrackingON(this) && !HyperTrack.isTracking())) {
             startHyperTrackTracking();
         }
     }
@@ -64,7 +66,7 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
         placelineFragment.setToolbarIconOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                drawer.openDrawer(Gravity.LEFT);
+                drawer.openDrawer(GravityCompat.START);
             }
         });
 
@@ -85,13 +87,13 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
     private void startHyperTrackTracking() {
         if (!HyperTrack.isTracking()) {
             HyperTrack.startTracking();
-            SharedPreferenceManager.setTrackingON();
+            SharedPreferenceManager.setTrackingON(this);
             navigationView.getMenu().findItem(R.id.start_tracking_toggle).setTitle(R.string.stop_tracking);
             Toast.makeText(this, "Tracking started successfully.", Toast.LENGTH_SHORT).show();
 
         } else {
             HyperTrack.stopTracking();
-            SharedPreferenceManager.setTrackingOFF();
+            SharedPreferenceManager.setTrackingOFF(this);
             navigationView.getMenu().findItem(R.id.start_tracking_toggle).setTitle(R.string.start_tracking);
             Toast.makeText(this, "Tracking stopped successfully.", Toast.LENGTH_SHORT).show();
         }

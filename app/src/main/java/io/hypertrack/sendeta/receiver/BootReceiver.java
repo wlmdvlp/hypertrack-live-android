@@ -44,9 +44,9 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         HTLog.i(TAG, "HyperTrackLive Boot receiver onReceive");
 
-        if (SharedPreferenceManager.getGeofencingRequest() != null) {
+        if (SharedPreferenceManager.getGeofencingRequest(context) != null) {
             // Add Geofencing Request
-            ActionManager.getSharedManager(context).setGeofencingRequest(SharedPreferenceManager.getGeofencingRequest());
+            ActionManager.getSharedManager(context).setGeofencingRequest(SharedPreferenceManager.getGeofencingRequest(context));
             ActionManager.getSharedManager(context).addGeofencingRequest();
         }
     }
