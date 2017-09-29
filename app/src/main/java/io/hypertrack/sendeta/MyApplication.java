@@ -25,12 +25,14 @@ SOFTWARE.
 package io.hypertrack.sendeta;
 
 import android.app.Application;
+import android.content.Context;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 import com.hypertrack.lib.HyperTrack;
 import com.hypertrack.lib.internal.common.util.HTTextUtils;
 import com.squareup.leakcanary.LeakCanary;
+import com.squareup.leakcanary.RefWatcher;
 
 import io.branch.referral.Branch;
 import io.fabric.sdk.android.Fabric;
@@ -42,12 +44,16 @@ import io.hypertrack.sendeta.util.DevDebugUtils;
  */
 public class MyApplication extends Application {
 
-    private static MyApplication mInstance;
+    private RefWatcher refWatcher;
+
+    public static RefWatcher getRefWatcher(Context context) {
+        MyApplication application = (MyApplication) context.getApplicationContext();
+        return application.refWatcher;
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        mInstance = this;
 
         if (LeakCanary.isInAnalyzerProcess(this)) {
             // This process is dedicated to LeakCanary for heap analysis.
@@ -55,7 +61,7 @@ public class MyApplication extends Application {
             return;
         }
 
-        LeakCanary.install(this);
+        refWatcher = LeakCanary.install(this);
 
         try {
             if (!HTTextUtils.isEmpty(ApiKey.getApiKey(this))) {
@@ -80,9 +86,5 @@ public class MyApplication extends Application {
         DevDebugUtils.setHTLogLevel(Log.VERBOSE);
         // Log HyperTrack SDK Version
         DevDebugUtils.sdkVersionMessage();
-    }
-
-    public static synchronized MyApplication getInstance() {
-        return mInstance;
     }
 }

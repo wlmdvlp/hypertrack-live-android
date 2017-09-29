@@ -24,6 +24,8 @@ SOFTWARE.
 */
 package io.hypertrack.sendeta.model;
 
+import android.content.Context;
+
 import com.google.gson.annotations.SerializedName;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -31,11 +33,7 @@ import com.google.i18n.phonenumbers.Phonenumber;
 import com.hypertrack.lib.internal.common.util.HTTextUtils;
 import com.hypertrack.lib.models.User;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import io.hypertrack.sendeta.store.SharedPreferenceManager;
 
@@ -51,27 +49,23 @@ public class HyperTrackLiveUser extends User {
 
     private File photoImage;
 
-    @SerializedName("photoData")
-    private byte[] photoData;
-
-    public static HyperTrackLiveUser sharedHyperTrackLiveUser() {
+    public static HyperTrackLiveUser sharedHyperTrackLiveUser(Context context) {
         if (hyperTrackLiveUser == null) {
 
             synchronized (HyperTrackLiveUser.class) {
                 if (hyperTrackLiveUser == null) {
-                    hyperTrackLiveUser = getHyperTrackLiveUser();
+                    hyperTrackLiveUser = getHyperTrackLiveUser(context);
                 }
             }
         }
-
         return hyperTrackLiveUser;
     }
 
-    private static HyperTrackLiveUser getHyperTrackLiveUser() {
+    private static HyperTrackLiveUser getHyperTrackLiveUser(Context context) {
         HyperTrackLiveUser hyperTrackLiveUser = new HyperTrackLiveUser();
 
-        if (SharedPreferenceManager.getHyperTrackLiveUser() != null) {
-            hyperTrackLiveUser = SharedPreferenceManager.getHyperTrackLiveUser();
+        if (SharedPreferenceManager.getHyperTrackLiveUser(context) != null) {
+            hyperTrackLiveUser = SharedPreferenceManager.getHyperTrackLiveUser(context);
         }
 
         return hyperTrackLiveUser;
@@ -81,8 +75,8 @@ public class HyperTrackLiveUser extends User {
      * IMPORTANT: Call this method on every update to setHyperTrackLiveUser data to get the changes
      * reflected in the SharedPreferences for future reference.
      */
-    public static void setHyperTrackLiveUser() {
-        SharedPreferenceManager.setHyperTrackLiveUser(hyperTrackLiveUser);
+    public static void setHyperTrackLiveUser(Context context) {
+        SharedPreferenceManager.setHyperTrackLiveUser(context, hyperTrackLiveUser);
     }
 
     public String getCountryCode() {
@@ -109,21 +103,5 @@ public class HyperTrackLiveUser extends User {
 
         Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNo, getCountryCode());
         return phoneUtil.format(number, PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
-    }
-
-    public void saveFileAsBitmap(File file) {
-        int size = (int) file.length();
-        byte[] bytes = new byte[size];
-        try {
-            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
-            buf.read(bytes, 0, bytes.length);
-            buf.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        this.photoData = bytes;
     }
 }

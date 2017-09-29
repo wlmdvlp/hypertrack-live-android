@@ -103,6 +103,10 @@ public class ActionManager implements GoogleApiClient.ConnectionCallbacks {
         return false;
     }
 
+    public static void resetSharedManager(){
+        sharedManager = null;
+    }
+
     public void completeAction(final ActionManagerCallback callback) {
 
         if (HTTextUtils.isEmpty(this.getHyperTrackActionId())) {
@@ -159,7 +163,7 @@ public class ActionManager implements GoogleApiClient.ConnectionCallbacks {
 
             if (geofencingRequest != null) {
                 // Save this request to SharedPreferences (to be restored later if removed)
-                SharedPreferenceManager.setGeofencingRequest(geofencingRequest);
+                SharedPreferenceManager.setGeofencingRequest(mContext, geofencingRequest);
 
                 // Add Geofencing Request
                 addGeofencingRequest();
@@ -249,7 +253,7 @@ public class ActionManager implements GoogleApiClient.ConnectionCallbacks {
         this.clearPlace();
         this.clearAction();
         // Remove GeoFencingRequest from SharedPreferences
-        SharedPreferenceManager.removeGeofencingRequest();
+        SharedPreferenceManager.removeGeofencingRequest(mContext);
     }
 
     private void stopGeofencing() {
@@ -267,7 +271,7 @@ public class ActionManager implements GoogleApiClient.ConnectionCallbacks {
     private void getSavedActionData() {
         this.hyperTrackAction = SharedPreferenceManager.getAction(mContext);
         this.actionID = SharedPreferenceManager.getActionID(mContext);
-        this.place = SharedPreferenceManager.getActionPlace();
+        this.place = SharedPreferenceManager.getActionPlace(mContext);
     }
 
     public boolean isActionLive() {
@@ -311,22 +315,22 @@ public class ActionManager implements GoogleApiClient.ConnectionCallbacks {
     public void setHyperTrackAction(Action action) {
         this.hyperTrackAction = action;
         this.actionID = action.getId();
-        SharedPreferenceManager.setAction(action);
-        SharedPreferenceManager.setActionID(actionID);
+        SharedPreferenceManager.setAction(mContext, action);
+        SharedPreferenceManager.setActionID(mContext, actionID);
     }
 
     public String getHyperTrackActionId() {
-        if (this.actionID == null) {
-            this.actionID = SharedPreferenceManager.getActionID(mContext);
+        if (actionID == null) {
+            actionID = SharedPreferenceManager.getActionID(mContext);
         }
 
         // For Backward compatibility of running trips on app-upgrade
-        if (this.actionID == null && getHyperTrackAction() != null) {
-            this.actionID = getHyperTrackAction().getId();
-            SharedPreferenceManager.setActionID(this.actionID);
+        if (actionID == null && getHyperTrackAction() != null) {
+            actionID = getHyperTrackAction().getId();
+            SharedPreferenceManager.setActionID(mContext, actionID);
         }
 
-        return this.actionID;
+        return actionID;
     }
 
     public String getHyperTrackActionLookupId() {
@@ -334,18 +338,18 @@ public class ActionManager implements GoogleApiClient.ConnectionCallbacks {
     }
 
     private void savePlace() {
-        SharedPreferenceManager.setPlace(this.place);
+        SharedPreferenceManager.setPlace(mContext, place);
     }
 
     private void deletePlace() {
-        SharedPreferenceManager.deletePlace();
+        SharedPreferenceManager.deletePlace(mContext);
     }
 
     private void clearAction() {
-        SharedPreferenceManager.deleteAction();
-        SharedPreferenceManager.deleteActionID();
-        this.actionID = null;
-        this.hyperTrackAction = null;
+        SharedPreferenceManager.deleteAction(mContext);
+        SharedPreferenceManager.deleteActionID(mContext);
+        actionID = null;
+        hyperTrackAction = null;
     }
 
     @Override

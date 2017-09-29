@@ -99,10 +99,13 @@ import com.hypertrack.lib.models.Place;
 import com.hypertrack.lib.models.ServiceNotificationParams;
 import com.hypertrack.lib.models.ServiceNotificationParamsBuilder;
 import com.hypertrack.lib.models.SuccessResponse;
+import com.hypertrack.lib.models.User;
+import com.squareup.leakcanary.RefWatcher;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.hypertrack.sendeta.MyApplication;
 import io.hypertrack.sendeta.R;
 import io.hypertrack.sendeta.callback.ActionManagerListener;
 import io.hypertrack.sendeta.presenter.HomePresenter;
@@ -131,9 +134,8 @@ public class Home extends BaseActivity implements HomeView {
     private LinearLayout infoMessageView;
     private Place expectedPlace;
     private ProgressDialog mProgressDialog;
-    private boolean isMapLoaded = false, isvehicleTypeTabLayoutVisible = false;
+    private boolean isMapLoaded = false;
     private float zoomLevel = 16.0f;
-    private HomeMapAdapter adapter;
     private IHomePresenter<HomeView> presenter = new HomePresenter();
     private CoordinatorLayout rootLayout;
     private boolean fromPlaceline = false;
@@ -149,6 +151,8 @@ public class Home extends BaseActivity implements HomeView {
     boolean showCurrentLocationMarker = true;
     boolean isRestoreLocationSharing = false, isHandleTrackingUrlDeeplink = false;
 
+    private Handler placeSelectorViewClosedHandler = new Handler(), shareTrackingURLHandler = new Handler();
+
     private ActionManagerListener actionCompletedListener = new ActionManagerListener() {
         @Override
         public void OnCallback() {
@@ -163,7 +167,7 @@ public class Home extends BaseActivity implements HomeView {
         }
     };
 
-    public MapFragmentCallback callback = new MapFragmentCallback() {
+    public class MyMapFragmentCallback extends MapFragmentCallback {
         @Override
         public void onMapReadyCallback(HyperTrackMapFragment hyperTrackMapFragment, GoogleMap map) {
             onMapReady(map);
@@ -215,8 +219,7 @@ public class Home extends BaseActivity implements HomeView {
                     actionManager.setHyperTrackAction(action);
 
                     if (refreshedActionIds.size() > 1) {
-                        SharedPreferenceManager.setTrackingAction
-                                (refreshedActions.get(Math.abs(index - 1)));
+                        SharedPreferenceManager.setTrackingAction(Home.this, refreshedActions.get(Math.abs(index - 1)));
                     }
                 }
             }
@@ -252,20 +255,19 @@ public class Home extends BaseActivity implements HomeView {
 
         @Override
         public void onPlaceSelectorViewClosed() {
-            new Handler().postDelayed(new Runnable() {
+            placeSelectorViewClosedHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     bottomButtonCard.showBottomCardLayout();
                 }
             }, 200);
-
         }
 
         @Override
         public void onBackButtonIconPressed() {
             if (expectedPlace == null) {
                 //finish();
-                closeActivityWithCircularRevealAnimation();
+                onBackPressed();
             }
         }
 
@@ -276,6 +278,8 @@ public class Home extends BaseActivity implements HomeView {
             trackingToggle.setTag("summary");
         }
     };
+
+    public final MapFragmentCallback callback = new MyMapFragmentCallback();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -297,7 +301,7 @@ public class Home extends BaseActivity implements HomeView {
         htMapFragment = (HyperTrackMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.htMapfragment);
 
-        adapter = new HomeMapAdapter(this);
+        HomeMapAdapter adapter = new HomeMapAdapter(this);
         htMapFragment.setHTMapAdapter(adapter);
         htMapFragment.setMapFragmentCallback(callback);
 
@@ -312,8 +316,11 @@ public class Home extends BaseActivity implements HomeView {
             Toast.makeText(this, R.string.network_issue, Toast.LENGTH_SHORT).show();
         }
 
-        // Set callback for HyperTrackEvent updates
-//        setCallbackForHyperTrackEvents();
+        // Attach View Presenter to View
+        presenter.attachView(this);
+
+        // Set callback for HyperTrackEvent update  s
+        setHyperTrackCallbackForActivityUpdates();
 
         // Check if location is being shared currently
         if (restoreLocationSharingIfNeeded())
@@ -326,10 +333,34 @@ public class Home extends BaseActivity implements HomeView {
         if (!isRestoreLocationSharing && !isHandleTrackingUrlDeeplink) {
             htMapFragment.openPlaceSelectorView();
         }
-        initBottomButtonCard(false);
 
-        // Attach View Presenter to View
-        presenter.attachView(this);
+        initBottomButtonCard(false);
+    }
+
+    /**
+     * Method to set callback for HyperTrackEvents to update notification with relevant information.
+     * Note: Show share tracking url message on Stop_Ended/Trip_Started event and reset it in other cases.
+     */
+    private void setHyperTrackCallbackForActivityUpdates() {
+        HyperTrack.setCallback(new HyperTrackEventCallback() {
+            @Override
+            public void onEvent(@NonNull final HyperTrackEvent event) {
+                switch (event.getEventType()) {
+                    case HyperTrackEvent.EventType.LOCATION_CHANGED_EVENT:
+                        updateCurrentLocationMarker(event.getLocation());
+                        break;
+                }
+            }
+
+            @Override
+            public void onError(@NonNull final ErrorResponse errorResponse) {
+                // do nothing
+            }
+        });
+    }
+
+    private void removeHyperTrackEventCallback(){
+        HyperTrack.setCallback(null);
     }
 
     private void initializeUIViews() {
@@ -453,23 +484,6 @@ public class Home extends BaseActivity implements HomeView {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void circularRevealActivity() {
-
-        int cx = (rootLayout.getLeft() + rootLayout.getRight()) - getResources().getDimensionPixelSize(R.dimen.margin_xxxhigh);
-        int cy = (rootLayout.getTop() + rootLayout.getBottom()) - getResources().getDimensionPixelSize(R.dimen.margin_xxxhigh);
-
-        int finalRadius = (int) Math.hypot(rootLayout.getRight(), rootLayout.getBottom());
-        int initialRadius = getResources().getDimensionPixelSize(R.dimen.margin_xxhigh);
-        // create the animator for this view (the start radius is zero)
-        Animator circularReveal = ViewAnimationUtils.createCircularReveal(rootLayout, cx, cy, initialRadius, finalRadius);
-        circularReveal.setDuration(600);
-
-        // make the view visible and start the animation
-        rootLayout.setVisibility(View.VISIBLE);
-        circularReveal.start();
-    }
-
     private void closeActivityWithCircularRevealAnimation() {
        /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             int cx = rootLayout.getWidth()- getResources().getDimensionPixelSize(R.dimen.margin_xxhigh);
@@ -509,9 +523,26 @@ public class Home extends BaseActivity implements HomeView {
             circularReveal.start();
         } else*/
         {
-            super.onBackPressed();
+            onBackPressed();
         }
 
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void circularRevealActivity() {
+
+        int cx = (rootLayout.getLeft() + rootLayout.getRight()) - getResources().getDimensionPixelSize(R.dimen.margin_xxxhigh);
+        int cy = (rootLayout.getTop() + rootLayout.getBottom()) - getResources().getDimensionPixelSize(R.dimen.margin_xxxhigh);
+
+        int finalRadius = (int) Math.hypot(rootLayout.getRight(), rootLayout.getBottom());
+        int initialRadius = getResources().getDimensionPixelSize(R.dimen.margin_xxhigh);
+        // create the animator for this view (the start radius is zero)
+        Animator circularReveal = ViewAnimationUtils.createCircularReveal(rootLayout, cx, cy, initialRadius, finalRadius);
+        circularReveal.setDuration(600);
+
+        // make the view visible and start the animation
+        rootLayout.setVisibility(View.VISIBLE);
+        circularReveal.start();
     }
 
     private void shareLiveLocation() {
@@ -740,7 +771,7 @@ public class Home extends BaseActivity implements HomeView {
                     Log.d(TAG, "onSuccess: Current Location Recieved");
                     HyperTrackLocation hyperTrackLocation =
                             new HyperTrackLocation((Location) response.getResponseObject());
-                    SharedPreferenceManager.setLastKnownLocation((Location) response.getResponseObject());
+                    SharedPreferenceManager.setLastKnownLocation(Home.this, (Location) response.getResponseObject());
                     updateCurrentLocationMarker(hyperTrackLocation);
                 }
 
@@ -868,14 +899,14 @@ public class Home extends BaseActivity implements HomeView {
         if (SharedPreferenceManager.getActionID(Home.this) == null) {
 
             if (googleMap != null && googleMap.isMyLocationEnabled() && googleMap.getMyLocation() != null) {
-                SharedPreferenceManager.setLastKnownLocation(googleMap.getMyLocation());
+                SharedPreferenceManager.setLastKnownLocation(Home.this, googleMap.getMyLocation());
                 latLng = new LatLng(googleMap.getMyLocation().getLatitude(), googleMap.getMyLocation().getLongitude());
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel));
 
             } else {
                 // Set Default View for map according to User's LastKnownLocation
-                if (SharedPreferenceManager.getLastKnownLocation() != null) {
-                    defaultLocation = SharedPreferenceManager.getLastKnownLocation();
+                if (SharedPreferenceManager.getLastKnownLocation(Home.this) != null) {
+                    defaultLocation = SharedPreferenceManager.getLastKnownLocation(Home.this);
                 }
 
                 // Else Set Default View for map according to either User's Default Location
@@ -958,7 +989,8 @@ public class Home extends BaseActivity implements HomeView {
             lookupId = trackingAction.getLookupId();
             expectedPlace = trackingAction.getExpectedPlace();
         }
-        presenter.shareLiveLocation(ActionManager.getSharedManager(this), lookupId, expectedPlace);
+        User user = OnboardingManager.sharedManager(this).getUser();
+        presenter.shareLiveLocation(user, ActionManager.getSharedManager(this), lookupId, expectedPlace);
     }
 
     @Override
@@ -1041,6 +1073,9 @@ public class Home extends BaseActivity implements HomeView {
             HyperTrack.trackActionByLookupId(lookupId, new HyperTrackCallback() {
                 @Override
                 public void onSuccess(@NonNull SuccessResponse response) {
+                    if (htMapFragment != null) {
+                        htMapFragment.notifyChanged();
+                    }
                     // do nothing
                     if (mProgressDialog != null) {
                         mProgressDialog.dismiss();
@@ -1085,7 +1120,7 @@ public class Home extends BaseActivity implements HomeView {
      */
     private void OnStopSharing() {
 
-        if (SharedPreferenceManager.isTrackingON()) {
+        if (SharedPreferenceManager.isTrackingON(this)) {
             startHyperTrackTracking(true);
         } else {
             stopHyperTrackTracking();
@@ -1109,13 +1144,12 @@ public class Home extends BaseActivity implements HomeView {
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareMessage);
         startActivityForResult(Intent.createChooser(sharingIntent, "Share via"),
                 Constants.SHARE_REQUEST_CODE);
-        new Handler().postDelayed(new Runnable() {
+        shareTrackingURLHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 bottomButtonCard.hideBottomCardLayout();
             }
         }, 2000);
-
     }
 
     @Override
@@ -1153,16 +1187,16 @@ public class Home extends BaseActivity implements HomeView {
         if (!HyperTrack.isTracking()) {
             HyperTrack.startTracking();
             if (byUser) {
-                SharedPreferenceManager.setTrackingON();
+                SharedPreferenceManager.setTrackingON(this);
             }
         } else if (byUser) {
-            SharedPreferenceManager.setTrackingON();
+            SharedPreferenceManager.setTrackingON(this);
         }
     }
 
     private void stopHyperTrackTracking() {
         HyperTrack.stopTracking();
-        SharedPreferenceManager.setTrackingOFF();
+        SharedPreferenceManager.setTrackingOFF(this);
     }
 
     @Override
@@ -1199,11 +1233,11 @@ public class Home extends BaseActivity implements HomeView {
 
     private void geocodeUserCountryName() {
         // Fetch Country Level Location only if no cached location is available
-        Location lastKnownCachedLocation = SharedPreferenceManager.getLastKnownLocation();
+        Location lastKnownCachedLocation = SharedPreferenceManager.getLastKnownLocation(this);
         if (lastKnownCachedLocation == null || lastKnownCachedLocation.getLatitude() == 0.0
                 || lastKnownCachedLocation.getLongitude() == 0.0) {
 
-            OnboardingManager onboardingManager = OnboardingManager.sharedManager();
+            OnboardingManager onboardingManager = OnboardingManager.sharedManager(this);
             String countryName = Utils.getCountryName(onboardingManager.getUser().getCountryCode());
             if (!HTTextUtils.isEmpty(countryName)) {
                 Intent intent = new Intent(this, FetchLocationIntentService.class);
@@ -1235,7 +1269,7 @@ public class Home extends BaseActivity implements HomeView {
                         zoomLevel = 16.9f;
 
                     // Check if any Location Data is available, meaning Country zoom level need not be used
-                    Location lastKnownCachedLocation = SharedPreferenceManager.getLastKnownLocation();
+                    Location lastKnownCachedLocation = SharedPreferenceManager.getLastKnownLocation(Home.this);
                     if (lastKnownCachedLocation != null && lastKnownCachedLocation.getLatitude() != 0.0
                             && lastKnownCachedLocation.getLongitude() != 0.0) {
                         return;
@@ -1270,7 +1304,19 @@ public class Home extends BaseActivity implements HomeView {
             actionManager.setActionComletedListener(actionCompletedListener);
 
             lookupId = actionManager.getHyperTrackAction().getLookupId();
-            HyperTrack.trackActionByLookupId(lookupId, null);
+            HyperTrack.trackActionByLookupId(lookupId, new HyperTrackCallback() {
+                @Override
+                public void onSuccess(@NonNull SuccessResponse response) {
+                    if (htMapFragment != null) {
+                        htMapFragment.notifyChanged();
+                    }
+                }
+
+                @Override
+                public void onError(@NonNull ErrorResponse errorResponse) {
+
+                }
+            });
         }
 
         // Check if Location & Network are Enabled
@@ -1307,6 +1353,7 @@ public class Home extends BaseActivity implements HomeView {
     @Override
     protected void onPause() {
         super.onPause();
+        HyperTrack.removeActions(null);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mConnectivityChangeReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mLocationChangeReceiver);
     }
@@ -1319,6 +1366,7 @@ public class Home extends BaseActivity implements HomeView {
 
         //If tracking action has completed and summary view is visible then on back press clear the view
         // so that user can share new tracking url without reopening the app.
+        boolean isvehicleTypeTabLayoutVisible = false;
         if (actionManager.getHyperTrackAction() != null &&
                 actionManager.getHyperTrackAction().hasActionFinished()) {
 
@@ -1337,20 +1385,26 @@ public class Home extends BaseActivity implements HomeView {
             startActivity(new Intent(Home.this, Placeline.class));
         }
         //finish();
-        closeActivityWithCircularRevealAnimation();
+        super.onBackPressed();
     }
 
     @Override
     protected void onStop() {
+        Log.d(TAG, "onStop: ");
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
+        Log.d(TAG, "onDestroy: ");
+
         // Detach View from Presenter
         presenter.detachView();
+        shareTrackingURLHandler.removeCallbacksAndMessages(null);
+        placeSelectorViewClosedHandler.removeCallbacksAndMessages(null);
+
         if (SharedPreferenceManager.getAction(this) == null)
-            SharedPreferenceManager.deleteTrackingAction();
+            SharedPreferenceManager.deleteTrackingAction(Home.this);
         ActionManager actionManager = ActionManager.getSharedManager(this);
 
         //If tracking action has completed and summary view is visible then on back press clear the view
@@ -1364,7 +1418,10 @@ public class Home extends BaseActivity implements HomeView {
             OnStopSharing();
             HyperTrack.removeActions(null);
         }
+        removeHyperTrackEventCallback();
+        ActionManager.resetSharedManager();
         super.onDestroy();
+        RefWatcher refWatcher = MyApplication.getRefWatcher(this);
+        refWatcher.watch(this);
     }
 }
-

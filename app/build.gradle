@@ -19,6 +19,10 @@ repositories {
 }
 
 def keyPropertiesFile = rootProject.file("key.properties");
+if(keyPropertiesFile == null || !keyPropertiesFile.exists()){
+    throw new GradleException("key.properties file is missing that contains HyperTrack Publishable Key." +
+            "\nRefer Step 2 at https://github.com/hypertrack/hypertrack-live-android#to-use-this-app for more info.");
+}
 def keyProperties = new Properties();
 keyProperties.load(new FileInputStream(keyPropertiesFile));
 
@@ -129,6 +133,10 @@ android {
 
     buildTypes {
         release {
+            if (keyProperties['HYPERTRACK_PUBLISHABLE_KEY'] == "\"YOUR_HYPERTRACK_PUBLISHABLE_KEY\"") {
+                throw new GradleException("Publishable Key is Missing in key.properties file.\nRefer Step 2 at https://github.com/hypertrack/hypertrack-live-android#to-use-this-app for more info.");
+                return;
+            }
             debuggable false
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -138,13 +146,13 @@ android {
         }
 
         debug {
+            if (keyProperties['HYPERTRACK_PUBLISHABLE_KEY'] == "\"YOUR_HYPERTRACK_PUBLISHABLE_KEY\"") {
+                throw new GradleException("Publishable Key is Missing in key.properties file.\nRefer Step 2 at https://github.com/hypertrack/hypertrack-live-android#to-use-this-app for more info.");
+                return;
+            }
             debuggable true
             minifyEnabled false
-            applicationIdSuffix '.activity_test'
-            versionNameSuffix '-activity_test'
-            resValue "string", "app_name", "HTActivity test"
-            resValue "string", "deeplink_scheme", ""
-            resValue "string", "tracking_url", ""
+            versionNameSuffix '-debug'
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             splits.density.enable = false
             ext.alwaysUpdateBuildId = false
@@ -182,21 +190,23 @@ dependencies {
     testCompile 'org.robolectric:robolectric:3.4.2'
     compile 'com.facebook.stetho:stetho:1.5.0'
 
-   /* compile("com.hypertrack:android:0.4.8:release@aar") {
-        transitive = true;
-    }*/
-
-     releaseCompile(project(path: ':library', configuration: 'release')) {
-         transitive = true
-     }
-
-     debugCompile(project(path: ':library', configuration: 'release')) {
-         transitive = true
-     }
-
-    if (keyProperties['STAGING_HYPERTRACK_PUBLISHABLE_KEY'] != null) {
-        stagingCompile(project(path: ':library', configuration: 'debug')) {
+    if (findProject(':library') != null) {
+        releaseCompile(project(path: ':library', configuration: 'release')) {
             transitive = true
+        }
+
+        debugCompile(project(path: ':library', configuration: 'release')) {
+            transitive = true
+        }
+
+        if (keyProperties['STAGING_HYPERTRACK_PUBLISHABLE_KEY'] != null) {
+            stagingCompile(project(path: ':library', configuration: 'debug')) {
+                transitive = true
+            }
+        }
+    } else {
+        compile("com.hypertrack:android:0.4.14:release@aar") {
+            transitive = true;
         }
     }
 
@@ -213,12 +223,21 @@ dependencies {
     compile 'com.github.rubensousa:gravitysnaphelper:1.1'
     compile 'com.skyfishjy.ripplebackground:library:1.0.1'
     compile 'com.github.Q42:AndroidScrollingImageView:1.2'
-    debugCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     if (keyProperties['STAGING_HYPERTRACK_PUBLISHABLE_KEY'] != null) {
-        stagingCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
+        stagingCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     }
-    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
     compile 'io.branch.sdk.android:library:2.12.0'
+
+    // Check if SDK library exist or not
+    if (findProject(':library') != null) {
+        println("Library Exist");
+        compile project(':library')
+    } else {
+        println("Library Doesn't Exist");
+    }
 }
 
 /*
@@ -230,5 +249,3 @@ if (googleServicesFile.exists()) {
     System.out.println("Google Service File Exist");
     apply plugin: 'com.google.gms.google-services'
 }
-
-

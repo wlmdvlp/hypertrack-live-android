@@ -10,9 +10,11 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -22,7 +24,6 @@ import com.hypertrack.lib.callbacks.HyperTrackEventCallback;
 import com.hypertrack.lib.internal.common.logging.HTLog;
 import com.hypertrack.lib.internal.consumer.view.Placeline.PlacelineFragment;
 import com.hypertrack.lib.internal.transmitter.models.HyperTrackEvent;
-import com.hypertrack.lib.internal.transmitter.models.UserActivity;
 import com.hypertrack.lib.models.ErrorResponse;
 import com.hypertrack.lib.models.ServiceNotificationParams;
 import com.hypertrack.lib.models.ServiceNotificationParamsBuilder;
@@ -32,6 +33,7 @@ import java.util.UUID;
 
 import io.hypertrack.sendeta.R;
 import io.hypertrack.sendeta.store.ActionManager;
+import io.hypertrack.sendeta.store.SharedPreferenceManager;
 
 /**
  * Created by Aman Jain on 24/05/17.
@@ -40,23 +42,22 @@ import io.hypertrack.sendeta.store.ActionManager;
 public class Placeline extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = Placeline.class.getSimpleName();
-    PlacelineFragment placelineFragment;
-    FloatingActionButton floatingActionButton;
+    private PlacelineFragment placelineFragment;
     private DrawerLayout drawer;
-    NavigationView navigationView;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_placeline);
+
         initUI();
 
-        // TODO: 17/09/17 Remove this and use proper way for this
-        // Start Tracking, if not already tracked
-        if (!HyperTrack.isTracking())
+        // Start Tracking, Only first time
+        if (SharedPreferenceManager.isTrackingON(this) == null ||
+                (SharedPreferenceManager.isTrackingON(this) && !HyperTrack.isTracking())) {
             startHyperTrackTracking();
-
-        setHyperTrackCallbackForActivityUpdates();
+        }
     }
 
     private void initUI() {
@@ -67,7 +68,7 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
         }
         navigationView.setNavigationItemSelectedListener(this);
         placelineFragment = (PlacelineFragment) getSupportFragmentManager().findFragmentById(R.id.placeline_fragment);
-        floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingActionButton);
+        FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.floatingActionButton);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -76,6 +77,13 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
                 startActivity(intent);
             }
         });
+        placelineFragment.setToolbarIconOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawer.openDrawer(GravityCompat.START);
+            }
+        });
+
     }
 
     @Override
@@ -83,9 +91,8 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
         drawer.closeDrawers();
         if (item.getItemId() == R.id.edit_profile)
             startActivity(new Intent(this, Profile.class));
-        else if (item.getItemId() == R.id.edit_activity) {
-            startActivity(new Intent(this, FeedbackPlaceline.class));
-        } else if (item.getItemId() == R.id.start_tracking_toggle) {
+
+        else if (item.getItemId() == R.id.start_tracking_toggle) {
             startHyperTrackTracking();
         }
         return true;
@@ -94,11 +101,13 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
     private void startHyperTrackTracking() {
         if (!HyperTrack.isTracking()) {
             HyperTrack.startTracking();
+            SharedPreferenceManager.setTrackingON(this);
             navigationView.getMenu().findItem(R.id.start_tracking_toggle).setTitle(R.string.stop_tracking);
             Toast.makeText(this, "Tracking started successfully.", Toast.LENGTH_SHORT).show();
 
         } else {
             HyperTrack.stopTracking();
+            SharedPreferenceManager.setTrackingOFF(this);
             navigationView.getMenu().findItem(R.id.start_tracking_toggle).setTitle(R.string.start_tracking);
             Toast.makeText(this, "Tracking stopped successfully.", Toast.LENGTH_SHORT).show();
         }
@@ -147,7 +156,7 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
                         HyperTrack.clearServiceNotificationParams();
                         break;
                     case HyperTrackEvent.EventType.ACTIVITY_CHANGED_EVENT:
-                        showActivityChangedNotification(Placeline.this, getActivityChangedMessage((UserActivity) event.getData()));
+//                        showActivityChangedNotification(Placeline.this, getActivityChangedMessage((UserActivity) event.getData()));
                         break;
                 }
             }
@@ -159,9 +168,9 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
         });
     }
 
-    private String getActivityChangedMessage(UserActivity activity) {
-        return activity.getActivityString();
-    }
+//    private String getActivityChangedMessage(UserActivity activity) {
+//        return activity.getActivityString();
+//    }
 
     private void showActivityChangedNotification(Context context, String message) {
         try {
@@ -185,7 +194,19 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
             notificationManager.notify(UUID.randomUUID().hashCode() /* ID of notification */, builder.build());
         } catch (Exception e) {
             e.printStackTrace();
-            HTLog.exception(TAG, e);
+//            HTLog.exception(TAG, e);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawer.isDrawerOpen(Gravity.LEFT)) {
+            drawer.closeDrawers();
+            return;
+        }
+
+        if (placelineFragment.onBackPressed())
+            return;
+        super.onBackPressed();
     }
 }

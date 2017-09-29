@@ -27,7 +27,6 @@ package io.hypertrack.sendeta.network.retrofit;
 import com.hypertrack.lib.models.User;
 
 import io.hypertrack.sendeta.model.AcceptInviteModel;
-import io.hypertrack.sendeta.model.ActivityFeedbackModel;
 import io.hypertrack.sendeta.model.VerifyCodeModel;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -37,7 +36,7 @@ import retrofit2.http.Path;
 /**
  * Created by piyush on 22/10/16.
  */
-public interface HyperTrackService {
+public interface HyperTrackLiveService {
 
     @POST("users/{id}/accept_invite/")
     Call<User> acceptInvite(@Path("id") String id, @Body AcceptInviteModel acceptInviteModel);
@@ -47,7 +46,4 @@ public interface HyperTrackService {
 
     @POST("users/{id}/send_verification/")
     Call<User> sendCode(@Path("id") String id);
-
-    @POST("activity_feedback/")
-    Call<ActivityFeedbackModel> sendActivityFeedback(@Body ActivityFeedbackModel activityFeedbackModel);
 }
