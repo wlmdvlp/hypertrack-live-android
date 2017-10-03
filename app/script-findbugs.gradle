@@ -1,0 +1,15 @@
+apply plugin: 'findbugs'
+
+task findbugs(type: FindBugs) {
+//    excludeFilter = file('config/findbugs/findbugs.xml')
+    classes = fileTree('build/intermediates/classes/')
+    source = fileTree('src/main/java')
+    println(source.asPath)
+    classpath = files()
+
+    reports {
+        xml.enabled = false
+        html.enabled = true
+        html.destination = "build/outputs/findbugs/findbugs.html"
+    }
+}

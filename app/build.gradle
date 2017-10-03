@@ -30,7 +30,6 @@ def keyProperties = new Properties();
 keyProperties.load(new FileInputStream(keyPropertiesFile));
 
 android {
-
     compileSdkVersion 25
     buildToolsVersion '25.0.3'
     lintOptions {
@@ -62,7 +61,7 @@ android {
         }
     }
 
-    //Check if Fabric crashlyitcs is configured or not.
+    // Check if Fabric crashlytics is configured or not.
     def fabricCheck = false;
     File fabricPropertiesFile = rootProject.file("app/fabric.properties");
     if (fabricPropertiesFile.exists()) {
