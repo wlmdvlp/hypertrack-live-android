@@ -9,8 +9,11 @@ buildscript {
         classpath 'io.fabric.tools:gradle:1.22.0'
     }
 }
+
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
+apply from: "script-findbugs.gradle"
+apply from: "script-pmd.gradle"
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
