@@ -24,6 +24,7 @@ import com.hypertrack.lib.callbacks.HyperTrackEventCallback;
 import com.hypertrack.lib.internal.common.logging.HTLog;
 import com.hypertrack.lib.internal.consumer.view.Placeline.PlacelineFragment;
 import com.hypertrack.lib.internal.transmitter.models.HyperTrackEvent;
+import com.hypertrack.lib.internal.transmitter.models.UserActivity;
 import com.hypertrack.lib.models.ErrorResponse;
 import com.hypertrack.lib.models.ServiceNotificationParams;
 import com.hypertrack.lib.models.ServiceNotificationParamsBuilder;
@@ -58,6 +59,8 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
                 (SharedPreferenceManager.isTrackingON(this) && !HyperTrack.isTracking())) {
             startHyperTrackTracking();
         }
+
+        setHyperTrackCallbackForActivityUpdates();
     }
 
     private void initUI() {
@@ -89,10 +92,11 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         drawer.closeDrawers();
-        if (item.getItemId() == R.id.edit_profile)
+        if (item.getItemId() == R.id.edit_profile) {
             startActivity(new Intent(this, Profile.class));
-
-        else if (item.getItemId() == R.id.start_tracking_toggle) {
+        } else if (item.getItemId() == R.id.review_placeline) {
+            startActivity(new Intent(this, FeedbackPlaceline.class));
+        } else if (item.getItemId() == R.id.start_tracking_toggle) {
             startHyperTrackTracking();
         }
         return true;
@@ -156,7 +160,7 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
                         HyperTrack.clearServiceNotificationParams();
                         break;
                     case HyperTrackEvent.EventType.ACTIVITY_CHANGED_EVENT:
-//                        showActivityChangedNotification(Placeline.this, getActivityChangedMessage((UserActivity) event.getData()));
+                        showActivityChangedNotification(Placeline.this, getActivityChangedMessage((UserActivity) event.getData()));
                         break;
                 }
             }
@@ -168,9 +172,9 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
         });
     }
 
-//    private String getActivityChangedMessage(UserActivity activity) {
-//        return activity.getActivityString();
-//    }
+    private String getActivityChangedMessage(UserActivity activity) {
+        return activity.getActivityString();
+    }
 
     private void showActivityChangedNotification(Context context, String message) {
         try {
