@@ -24,7 +24,6 @@ import com.hypertrack.lib.callbacks.HyperTrackEventCallback;
 import com.hypertrack.lib.internal.common.logging.HTLog;
 import com.hypertrack.lib.internal.consumer.view.Placeline.PlacelineFragment;
 import com.hypertrack.lib.internal.transmitter.models.HyperTrackEvent;
-import com.hypertrack.lib.internal.transmitter.models.UserActivity;
 import com.hypertrack.lib.models.ErrorResponse;
 import com.hypertrack.lib.models.ServiceNotificationParams;
 import com.hypertrack.lib.models.ServiceNotificationParamsBuilder;
@@ -160,7 +159,7 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
                         HyperTrack.clearServiceNotificationParams();
                         break;
                     case HyperTrackEvent.EventType.ACTIVITY_CHANGED_EVENT:
-                        showActivityChangedNotification(Placeline.this, getActivityChangedMessage((UserActivity) event.getData()));
+//                        showActivityChangedNotification(Placeline.this, getActivityChangedMessage((UserActivity) event.getData()));
                         break;
                 }
             }
@@ -172,9 +171,9 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
         });
     }
 
-    private String getActivityChangedMessage(UserActivity activity) {
-        return activity.getActivityString();
-    }
+//    private String getActivityChangedMessage(UserActivity activity) {
+//        return activity.getActivityString();
+//    }
 
     private void showActivityChangedNotification(Context context, String message) {
         try {
@@ -198,7 +197,6 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
             notificationManager.notify(UUID.randomUUID().hashCode() /* ID of notification */, builder.build());
         } catch (Exception e) {
             e.printStackTrace();
-//            HTLog.exception(TAG, e);
         }
     }
 
@@ -212,5 +210,11 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
         if (placelineFragment.onBackPressed())
             return;
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        ActionManager.resetSharedManager();
+        super.onDestroy();
     }
 }
