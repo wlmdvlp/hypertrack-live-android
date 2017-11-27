@@ -84,24 +84,19 @@ import com.hypertrack.lib.HyperTrackMapFragment;
 import com.hypertrack.lib.HyperTrackUtils;
 import com.hypertrack.lib.MapFragmentCallback;
 import com.hypertrack.lib.callbacks.HyperTrackCallback;
-import com.hypertrack.lib.callbacks.HyperTrackEventCallback;
 import com.hypertrack.lib.internal.common.logging.HTLog;
 import com.hypertrack.lib.internal.common.util.HTTextUtils;
 import com.hypertrack.lib.internal.consumer.utils.AnimationUtils;
 import com.hypertrack.lib.internal.consumer.view.MarkerAnimation;
 import com.hypertrack.lib.internal.consumer.view.RippleView;
-import com.hypertrack.lib.internal.transmitter.models.HyperTrackEvent;
 import com.hypertrack.lib.models.Action;
 import com.hypertrack.lib.models.ErrorResponse;
 import com.hypertrack.lib.models.HyperTrackError;
 import com.hypertrack.lib.models.HyperTrackLocation;
 import com.hypertrack.lib.models.Place;
-import com.hypertrack.lib.models.ServiceNotificationParams;
-import com.hypertrack.lib.models.ServiceNotificationParamsBuilder;
 import com.hypertrack.lib.models.SuccessResponse;
 import com.hypertrack.lib.models.User;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.hypertrack.sendeta.R;
@@ -338,21 +333,21 @@ public class Home extends BaseActivity implements HomeView {
      * Note: Show share tracking url message on Stop_Ended/Trip_Started event and reset it in other cases.
      */
     private void setHyperTrackCallbackForActivityUpdates() {
-        HyperTrack.setCallback(new HyperTrackEventCallback() {
-            @Override
-            public void onEvent(@NonNull final HyperTrackEvent event) {
-                switch (event.getEventType()) {
-                    case HyperTrackEvent.EventType.LOCATION_CHANGED_EVENT:
-                        updateCurrentLocationMarker(event.getLocation());
-                        break;
-                }
-            }
-
-            @Override
-            public void onError(@NonNull final ErrorResponse errorResponse) {
-                // do nothing
-            }
-        });
+//        HyperTrack.setCallback(new HyperTrackEventCallback() {
+//            @Override
+//            public void onEvent(@NonNull final HyperTrackEvent event) {
+//                switch (event.getEventType()) {
+//                    case HyperTrackEvent.EventType.LOCATION_CHANGED_EVENT:
+//                        updateCurrentLocationMarker(event.getLocation());
+//                        break;
+//                }
+//            }
+//
+//            @Override
+//            public void onError(@NonNull final ErrorResponse errorResponse) {
+//                // do nothing
+//            }
+//        });
     }
 
     private void initializeUIViews() {
@@ -573,53 +568,53 @@ public class Home extends BaseActivity implements HomeView {
      * Note: Show share tracking url message on Stop_Ended/Trip_Started event and reset it in other cases.
      */
     private void setCallbackForHyperTrackEvents() {
-        HyperTrack.setCallback(new HyperTrackEventCallback() {
-            @Override
-            public void onEvent(@NonNull final HyperTrackEvent event) {
-                switch (event.getEventType()) {
-                    case HyperTrackEvent.EventType.STOP_ENDED_EVENT:
-
-                        //Check if user has shared his tracking link
-                        if (ActionManager.getSharedManager(Home.this).isActionLive()) {
-                            return;
-                        }
-
-                        Home.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                ServiceNotificationParamsBuilder builder = new ServiceNotificationParamsBuilder();
-                                ArrayList<String> action = new ArrayList<>();
-                                action.add("Set Destination Address");
-                                ServiceNotificationParams notificationParams = builder
-                                        .setSmallIcon(R.drawable.ic_ht_service_notification_small)
-                                        .setSmallIconBGColor(ContextCompat.getColor(Home.this, R.color.colorAccent))
-                                        .setContentTitle(getString(R.string.notification_share_tracking_link))
-                                        .setContextText(getString(R.string.notification_set_destination))
-                                        .setContentIntentActivityClass(SplashScreen.class)
-                                        .setContentIntentExtras(action)
-                                        .build();
-                                HyperTrack.setServiceNotificationParams(notificationParams);
-                            }
-                        });
-                        break;
-                    case HyperTrackEvent.EventType.TRACKING_STOPPED_EVENT:
-                    case HyperTrackEvent.EventType.ACTION_ASSIGNED_EVENT:
-                    case HyperTrackEvent.EventType.ACTION_COMPLETED_EVENT:
-                    case HyperTrackEvent.EventType.STOP_STARTED_EVENT:
-                        HyperTrack.clearServiceNotificationParams();
-                        break;
-                    case HyperTrackEvent.EventType.LOCATION_CHANGED_EVENT:
-                        Log.d(TAG, "onEvent: Location Changed");
-                        updateCurrentLocationMarker(event.getLocation());
-                        break;
-                }
-            }
-
-            @Override
-            public void onError(@NonNull final ErrorResponse errorResponse) {
-                // do nothing
-            }
-        });
+//        HyperTrack.setCallback(new HyperTrackEventCallback() {
+//            @Override
+//            public void onEvent(@NonNull final HyperTrackEvent event) {
+//                switch (event.getEventType()) {
+//                    case HyperTrackEvent.EventType.STOP_ENDED_EVENT:
+//
+//                        //Check if user has shared his tracking link
+//                        if (ActionManager.getSharedManager(Home.this).isActionLive()) {
+//                            return;
+//                        }
+//
+//                        Home.this.runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                ServiceNotificationParamsBuilder builder = new ServiceNotificationParamsBuilder();
+//                                ArrayList<String> action = new ArrayList<>();
+//                                action.add("Set Destination Address");
+//                                ServiceNotificationParams notificationParams = builder
+//                                        .setSmallIcon(R.drawable.ic_ht_service_notification_small)
+//                                        .setSmallIconBGColor(ContextCompat.getColor(Home.this, R.color.colorAccent))
+//                                        .setContentTitle(getString(R.string.notification_share_tracking_link))
+//                                        .setContextText(getString(R.string.notification_set_destination))
+//                                        .setContentIntentActivityClass(SplashScreen.class)
+//                                        .setContentIntentExtras(action)
+//                                        .build();
+//                                HyperTrack.setServiceNotificationParams(notificationParams);
+//                            }
+//                        });
+//                        break;
+//                    case HyperTrackEvent.EventType.TRACKING_STOPPED_EVENT:
+//                    case HyperTrackEvent.EventType.ACTION_ASSIGNED_EVENT:
+//                    case HyperTrackEvent.EventType.ACTION_COMPLETED_EVENT:
+//                    case HyperTrackEvent.EventType.STOP_STARTED_EVENT:
+//                        HyperTrack.clearServiceNotificationParams();
+//                        break;
+//                    case HyperTrackEvent.EventType.LOCATION_CHANGED_EVENT:
+//                        Log.d(TAG, "onEvent: Location Changed");
+//                        updateCurrentLocationMarker(event.getLocation());
+//                        break;
+//                }
+//            }
+//
+//            @Override
+//            public void onError(@NonNull final ErrorResponse errorResponse) {
+//                // do nothing
+//            }
+//        });
     }
 
     /*
