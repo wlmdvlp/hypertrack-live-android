@@ -134,8 +134,8 @@ android {
                 throw new GradleException("Publishable Key is Missing in key.properties file");
                 return;
             }
-            debuggable false
-            minifyEnabled true
+            debuggable true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             if (!fabricCheck) {
                 ext.enableCrashlytics = false
@@ -179,7 +179,7 @@ dependencies {
     testCompile 'org.mockito:mockito-core:2.8.9'
     testCompile 'org.robolectric:robolectric:3.4.2'
     debugCompile 'com.facebook.stetho:stetho:1.5.0'
-    stagingCompile 'com.facebook.stetho:stetho:1.5.0'
+//    stagingCompile 'com.facebook.stetho:stetho:1.5.0'
 
     // HyperTrack SDK dependency
     implementation(project(':library')) {
