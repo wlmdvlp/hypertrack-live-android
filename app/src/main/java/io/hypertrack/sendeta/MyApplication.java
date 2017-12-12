@@ -74,7 +74,7 @@ public class MyApplication extends Application {
         // Initialize Stetho to debug Databases
         DevDebugUtils.installStetho(this);
         // Enable HyperTrack Debug Logging
-        DevDebugUtils.setHTLogLevel(Log.VERBOSE);
+        DevDebugUtils.setHyperLogLevel(Log.VERBOSE);
         // Log HyperTrack SDK Version
         DevDebugUtils.sdkVersionMessage();
     }

@@ -84,7 +84,7 @@ import com.hypertrack.lib.HyperTrackMapFragment;
 import com.hypertrack.lib.HyperTrackUtils;
 import com.hypertrack.lib.MapFragmentCallback;
 import com.hypertrack.lib.callbacks.HyperTrackCallback;
-import com.hypertrack.lib.internal.common.logging.HTLog;
+
 import com.hypertrack.lib.internal.common.util.HTTextUtils;
 import com.hypertrack.lib.internal.consumer.utils.AnimationUtils;
 import com.hypertrack.lib.internal.consumer.view.MarkerAnimation;
@@ -152,7 +152,7 @@ public class Home extends BaseActivity implements HomeView {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    HTLog.i(TAG, "Inside runOnUIThread: ");
+                    HyperLog.i(TAG, "Inside runOnUIThread: ");
                     presenter.stopSharing(ActionManager.getSharedManager(Home.this), true);
                 }
             });

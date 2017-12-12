@@ -15,7 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hypertrack.lib.HyperTrack;
-import com.hypertrack.lib.internal.common.logging.HTLog;
+
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -125,7 +125,7 @@ public class Invite extends BaseActivity implements InviteView {
     public void inviteAccepted() {
         SharedPreferenceManager.deleteAction(this);
         SharedPreferenceManager.deletePlace(this);
-        HTLog.i(TAG, "User Registration successful: Clearing Active Trip, if any");
+        HyperLog.i(TAG, "User Registration successful: Clearing Active Trip, if any");
         TaskStackBuilder.create(Invite.this)
                 .addNextIntentWithParentStack(new Intent(Invite.this, Placeline.class)
                         .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))

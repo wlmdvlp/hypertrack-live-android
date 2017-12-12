@@ -30,7 +30,7 @@ import android.util.Log;
 
 import com.hypertrack.lib.HyperTrack;
 import com.hypertrack.lib.callbacks.HyperTrackCallback;
-import com.hypertrack.lib.internal.common.logging.HTLog;
+
 import com.hypertrack.lib.internal.common.util.HTTextUtils;
 import com.hypertrack.lib.internal.consumer.utils.ActionUtils;
 import com.hypertrack.lib.models.Action;
@@ -96,7 +96,7 @@ public class HomePresenter implements IHomePresenter<HomeView> {
                     actionManager.onActionStart();
 
                     HyperTrack.clearServiceNotificationParams();
-                    HTLog.i(TAG, "Share Live Location successful for userID: " + HyperTrack.getUserId());
+                    HyperLog.i(TAG, "Share Live Location successful for userID: " + HyperTrack.getUserId());
 
                     if (view != null)
                         view.showShareLiveLocationSuccess(action);
@@ -110,7 +110,7 @@ public class HomePresenter implements IHomePresenter<HomeView> {
 
             @Override
             public void onError(@NonNull ErrorResponse errorResponse) {
-                HTLog.e(TAG, "Share Live Location failed with error: " + errorResponse.getErrorMessage());
+                HyperLog.e(TAG, "Share Live Location failed with error: " + errorResponse.getErrorMessage());
                 if (view != null)
                     view.showShareLiveLocationError(errorResponse);
             }
@@ -123,7 +123,7 @@ public class HomePresenter implements IHomePresenter<HomeView> {
             @Override
             public void OnSuccess() {
                 HyperTrack.clearServiceNotificationParams();
-                HTLog.i(TAG, "Stopped sharing live location successfully" + (fromGeofence ? " by geofence." : "."));
+                HyperLog.i(TAG, "Stopped sharing live location successfully" + (fromGeofence ? " by geofence." : "."));
                 if (view != null) {
                     if (!fromGeofence)
                         view.showStopSharingSuccess();
@@ -135,7 +135,7 @@ public class HomePresenter implements IHomePresenter<HomeView> {
 
             @Override
             public void OnError() {
-                HTLog.i(TAG, "Error occurred while trying to stop sharing.");
+                HyperLog.i(TAG, "Error occurred while trying to stop sharing.");
                 if (view != null)
                     view.showStopSharingError();
             }

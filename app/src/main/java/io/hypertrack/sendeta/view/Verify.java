@@ -24,7 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.hypertrack.lib.HyperTrack;
-import com.hypertrack.lib.internal.common.logging.HTLog;
+
 import com.hypertrack.lib.internal.common.util.HTTextUtils;
 import com.hypertrack.lib.models.User;
 
@@ -190,7 +190,7 @@ public class Verify extends BaseActivity implements VerifyView {
         SharedPreferenceManager.deleteAction(this);
         SharedPreferenceManager.deletePlace(this);
 
-        HTLog.i(TAG, "User Registration successful: Clearing Active Trip, if any");
+        HyperLog.i(TAG, "User Registration successful: Clearing Active Trip, if any");
         Intent intent = new Intent(Verify.this, Placeline.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         TaskStackBuilder.create(Verify.this)
@@ -207,7 +207,7 @@ public class Verify extends BaseActivity implements VerifyView {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
                 if (response.isSuccessful()) {
-                    HTLog.d(TAG, "Invite Accepted");
+                    HyperLog.d(TAG, "Invite Accepted");
 
                 } else {
                     Log.d(TAG, "onResponse: There is some error occurred in accept invite. Please try again");
