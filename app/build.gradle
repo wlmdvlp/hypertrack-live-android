@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'io.fabric.tools:gradle:1.22.0'
+        classpath 'io.fabric.tools:gradle:1.25.1'
     }
 }
 apply plugin: 'com.android.application'
@@ -130,7 +130,7 @@ android {
     buildTypes {
         release {
             System.out.println(keyProperties['HYPERTRACK_PUBLISHABLE_KEY']);
-            if (keyProperties['HYPERTRACK_PUBLISHABLE_KEY']=="\"YOUR_HYPERTRACK_PUBLISHABLE_KEY\""){
+            if (keyProperties['HYPERTRACK_PUBLISHABLE_KEY'] == "\"YOUR_HYPERTRACK_PUBLISHABLE_KEY\"") {
                 throw new GradleException("Publishable Key is Missing in key.properties file");
                 return;
             }
@@ -147,6 +147,7 @@ android {
             minifyEnabled false
             versionNameSuffix '-debug'
             applicationIdSuffix '.debug'
+            resValue "string", "app_name", "Debug HyperTrack Live"
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             if (!fabricCheck) {
                 ext.enableCrashlytics = false
@@ -193,7 +194,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.4.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.googlecode.libphonenumber:libphonenumber:8.4.2'
-    compile 'com.squareup.retrofit2:retrofit:2.1.0'
+    compile 'com.squareup.retrofit2:retrofit:2.2.0'
     compile 'com.squareup.retrofit2:converter-gson:2.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.github.sundeepk:compact-calendar-view:1.9.2-beta'

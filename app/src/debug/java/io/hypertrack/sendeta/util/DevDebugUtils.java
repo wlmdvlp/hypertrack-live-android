@@ -4,6 +4,7 @@ package io.hypertrack.sendeta.util;
 import android.app.Application;
 
 import com.facebook.stetho.Stetho;
+import com.hypertrack.hyperlog.HyperLog;
 import com.hypertrack.lib.HyperTrack;
 
 
