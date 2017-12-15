@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.hypertrack.hyperlog.HyperLog;
 import com.hypertrack.lib.HyperTrack;
 import com.hypertrack.lib.internal.consumer.view.Placeline.PlacelineFragment;
 
@@ -42,6 +43,8 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
         // Start Tracking, Only first time
         if (SharedPreferenceManager.isTrackingON(this) == null ||
                 (SharedPreferenceManager.isTrackingON(this) && !HyperTrack.isTracking())) {
+            if (HyperTrack.isTracking())
+                HyperLog.i(TAG, "Called Stop Tracking from: Tracking Toogle");
             startHyperTrackTracking();
         }
     }
@@ -79,6 +82,8 @@ public class Placeline extends AppCompatActivity implements NavigationView.OnNav
             startActivity(new Intent(this, Profile.class));
 
         else if (item.getItemId() == R.id.start_tracking_toggle) {
+            if (HyperTrack.isTracking())
+                HyperLog.i(TAG, "Called Stop Tracking from: Tracking Toogle");
             startHyperTrackTracking();
         }
         return true;

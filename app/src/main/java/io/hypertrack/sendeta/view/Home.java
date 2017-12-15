@@ -1183,6 +1183,7 @@ public class Home extends BaseActivity implements HomeView {
     }
 
     private void stopHyperTrackTracking() {
+        HyperLog.i(TAG, "Called Stop Tracking");
         HyperTrack.stopTracking();
         SharedPreferenceManager.setTrackingOFF(this);
     }
